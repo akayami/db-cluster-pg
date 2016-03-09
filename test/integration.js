@@ -55,6 +55,26 @@ var config = {
 	}
 }
 
+var cluster = dbCluster(config);
+
 describe('Postgres Integration Tests', function() {
-	require('../../db-cluster/test/integration/test.js')(dbCluster, config);
+	beforeEach(function(done) {
+		cluster.master(function(err, conn) {
+			conn.query('CREATE TABLE ?? (id SERIAL PRIMARY KEY, name VARCHAR(40))', ['test'], function(err, result) {
+				conn.init(function(err) {
+					conn.release();
+					done(err);
+				})
+			})
+		})
+	});
+	afterEach(function(done) {
+		cluster.master(function(err, conn) {
+			conn.query(`DROP TABLE ??`, ['test'], function(err, result) {
+				conn.release();
+				done(err);
+			})
+		});
+	})
+	require('../../db-cluster/test/integration/test.js')(cluster, config);
 })
