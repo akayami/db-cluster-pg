@@ -4,14 +4,11 @@ class Result {
 	constructor(raw, pkReferenceName) {
 		this.raw = raw;
 		this.referenceName = pkReferenceName;
+		this.insertId = (this.referenceName ? this.rows()[0][this.referenceName] : null);
 	}
 
-	insertId() {
-		if(this.referenceName) {
-			return this.rows()[0][this.referenceName];	// Big assumption - Assumes single autoincrement field named id
-		} else {
-			return null;
-		}
+	rows() {
+		return this.raw.rows;
 	}
 
 	raw() {
@@ -20,10 +17,6 @@ class Result {
 
 	count() {
 		return this.raw.rowCount;
-	}
-
-	rows() {
-		return this.raw.rows;
 	}
 
 	fields() {
@@ -36,11 +29,11 @@ class Connection {
 	constructor(raw, done) {
 		this.connection = raw;
 		this.done = done;
-		this.map = null;
+		this.map = {};
 	}
 
 	init(cb) {
-		this.query("SELECT pgn.nspname schema_name, pgc.relname table_name, pga.attname column_name, format_type(pga.atttypid, pga.atttypmod) AS data_type FROM pg_index pgi JOIN pg_attribute pga ON (pga.attrelid = pgi.indrelid AND pga.attnum = ANY(pgi.indkey)) JOIN pg_class pgc ON (pgc.oid= pgi.indrelid AND pgc.relkind='r') JOIN pg_namespace pgn ON (pgc.relnamespace=pgn.oid) WHERE  pgi.indisprimary", function(err, result) {
+		this.connection.query("SELECT pgn.nspname schema_name, pgc.relname table_name, pga.attname column_name, format_type(pga.atttypid, pga.atttypmod) AS data_type FROM pg_index pgi JOIN pg_attribute pga ON (pga.attrelid = pgi.indrelid AND pga.attnum = ANY(pgi.indkey)) JOIN pg_class pgc ON (pgc.oid= pgi.indrelid AND pgc.relkind='r') JOIN pg_namespace pgn ON (pgc.relnamespace=pgn.oid) WHERE  pgi.indisprimary", function(err, result) {
 			if(err) {
 				return cb(err);
 			}
@@ -76,11 +69,13 @@ class Connection {
 			while ((myArray = match.exec(sql)) !== null) {
 				matches.push([match.lastIndex, myArray[0]]);
 			}
-			if (matches.length !== options.length) {
+			if (matches.length > options.length) {
 				throw new Error('Missing placeholders');
 			}
 			for (var x = 0; x < options.length; x++) {
-				sql = sql.replace(matches[x][1], this.escape(matches[x][1], options[x]));
+				if(matches[x] && matches[x][1]) {
+					sql = sql.replace(matches[x][1], this.escape(matches[x][1], options[x]));
+				}
 			}
 		}
 		return sql;
@@ -137,15 +132,19 @@ class Connection {
 				dataArray = null;
 			} else {
 				cb = options;
-				options = null;
+				options = {};
 			}
 		}
+		// if(typeof(sql) == 'object') {
+		// 	options['nestTables'] = sql.nestTables;
+		// 	sql = sql.sql
+		// }
 		var sql = this.parse(sql, dataArray);
 		this.connection.query(sql, function(err, result) {
 			if(err) {
 				err.sql = this.sql;
 			}
-			console.log(options);
+			//console.log(options);
 			cb(err, new Result(result, ((options && options['pkColumnName']) ? options['pkColumnName'] : null)));
 		}.bind({sql: sql}));
 	}
@@ -184,7 +183,6 @@ class Pool {
 			}
 			var conn = new Connection(client, done);
 			conn.init(function(err) {
-				console.log('Init');
 				if(err) {
 					return cb(err);
 				}
