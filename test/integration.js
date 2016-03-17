@@ -1,4 +1,4 @@
-var dbCluster = require('../../db-cluster');
+var dbCluster = require('db-cluster');
 var config = {
 	adapter: require('../index.js'),
 	driver: require('pg'),
@@ -76,5 +76,5 @@ describe('Postgres Integration Tests', function() {
 			})
 		});
 	})
-	require('../../db-cluster/test/integration/test.js')(cluster, config);
+	require('db-cluster/test/integration/test')(cluster, config);
 })

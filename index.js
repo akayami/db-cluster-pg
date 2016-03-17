@@ -1,10 +1,13 @@
 "use strict";
 
+var engine = 'pg';
+
 class Result {
 	constructor(raw, pkReferenceName) {
 		this.raw = raw;
 		this.referenceName = pkReferenceName;
 		this.insertId = (this.referenceName ? this.rows()[0][this.referenceName] : null);
+		this.length = (this.raw && this.raw.rows ? this.raw.rows.length : null);
 	}
 
 	rows() {
@@ -30,6 +33,7 @@ class Connection {
 		this.connection = raw;
 		this.done = done;
 		this.map = {};
+		this.engine = engine
 	}
 
 	init(cb) {
@@ -192,13 +196,13 @@ class Pool {
 	}
 
 	end(cb) {
-		if (this.pool) {
-			this.pool.end(cb);
-		}
+		this.driver.end();
+		cb();
 	}
 };
 
 module.exports = {
+	engine: engine,
 	getPool: function(driver, object) {
 		return new Pool(driver, object);
 	},

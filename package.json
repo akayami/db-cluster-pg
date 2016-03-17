@@ -1,6 +1,6 @@
 {
   "name": "db-cluster-pg",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "",
   "main": "index.js",
   "scripts": {
@@ -9,6 +9,7 @@
   "author": "Tomasz Rakowski",
   "license": "ISC",
   "devDependencies": {
+    "db-cluster": "0.0.2",
     "mocha": "^2.4.5",
     "pg": "^4.4.6"
   }
