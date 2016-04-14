@@ -1,4 +1,4 @@
-var dbCluster = require('db-cluster');
+var dbCluster = require('../../db-cluster');
 var config = {
 	adapter: require('../index.js'),
 	driver: require('pg'),
@@ -60,7 +60,8 @@ var cluster = dbCluster(config);
 describe('Postgres Integration Tests', function() {
 	beforeEach(function(done) {
 		cluster.master(function(err, conn) {
-			conn.query('CREATE TABLE ?? (id SERIAL PRIMARY KEY, name VARCHAR(40))', ['test'], function(err, result) {
+			conn.query('CREATE TABLE ?? (id SERIAL PRIMARY KEY, name VARCHAR(40), someval VARCHAR(40) NULL)', ['test'], function(err, result) {
+			//conn.query('CREATE TABLE ?? (id SERIAL PRIMARY KEY, name VARCHAR(40), someval VARCHAR(40) NULL)', ['test'], function(err, result) {
 				conn.init(function(err) {
 					conn.release();
 					done(err);

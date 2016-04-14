@@ -62,7 +62,7 @@ class Connection {
 	}
 
 	escapeValue(string) {
-		return "'" + string + "'";
+		return (string != null ? "'" + string + "'" : null);
 	}
 
 	parse(sql, options) {
@@ -99,9 +99,9 @@ class Connection {
 		var fieldPh = [];
 		var valuePh = [];
 		fields.forEach(function(field) {
-			fieldPh.push('??');
-			valuePh.push('?')
-			dataArray.push(data[field]);
+				fieldPh.push('??');
+				valuePh.push('?')
+				dataArray.push(data[field]);
 		});
 		// Big assumption - Assumes single autoincrement field named id
 		//console.log(this.pkmap);
