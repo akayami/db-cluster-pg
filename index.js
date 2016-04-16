@@ -94,7 +94,9 @@ class Connection {
 		var values = [];
 		var dataArray = [table];
 		for (var f = 0; f < fields.length; f++) {
-			dataArray.push(fields[f]);
+			if(data[fields[f]] !== undefined) {
+				dataArray.push(fields[f]);
+			}
 		}
 		var fieldPh = [];
 		var valuePh = [];
