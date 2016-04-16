@@ -1,4 +1,4 @@
-var dbCluster = require('../../db-cluster');
+var dbCluster = require('db-cluster');
 var config = {
 	adapter: require('../index.js'),
 	driver: require('pg'),
@@ -27,7 +27,7 @@ var config = {
 						pool.getConnection(function(err, conn) {
 							conn.query('select (FLOOR(1 + RAND() * 100)) as number', function(err, res) {
 								conn.release();
-								if (res[0].number % 2 == 0) {
+								if (res.rows()[0].number % 2 == 0) {
 									poolObject.paused = true;
 								} else {
 									poolObject.paused = false;
@@ -60,6 +60,9 @@ var cluster = dbCluster(config);
 describe('Postgres Integration Tests', function() {
 	beforeEach(function(done) {
 		cluster.master(function(err, conn) {
+			if(err) {
+				return done(err);
+			}
 			conn.query('CREATE TABLE ?? (id SERIAL PRIMARY KEY, name VARCHAR(40), someval VARCHAR(40) NULL)', ['test'], function(err, result) {
 			//conn.query('CREATE TABLE ?? (id SERIAL PRIMARY KEY, name VARCHAR(40), someval VARCHAR(40) NULL)', ['test'], function(err, result) {
 				conn.init(function(err) {
@@ -71,6 +74,9 @@ describe('Postgres Integration Tests', function() {
 	});
 	afterEach(function(done) {
 		cluster.master(function(err, conn) {
+			if(err) {
+				return done(err);
+			}
 			conn.query(`DROP TABLE ??`, ['test'], function(err, result) {
 				conn.release();
 				done(err);
